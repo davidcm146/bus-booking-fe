@@ -14,35 +14,16 @@ interface AuthContextValue {
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const FAKE_USER: User = {
-  id: "demo-user",
-  name: "Guest User",
-  email: "guest@busgo.app",
-  role: "customer",
-  operatorId: null,
-};
-
-const FAKE_SESSION: AuthSession = {
-  user: FAKE_USER,
-  token: "demo-token",
-};
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const session = getSession();
-      if (session) {
-        setUser(session.user);
-      } else {
-        localStorage.setItem("bus-booking:session", JSON.stringify(FAKE_SESSION));
-        setUser(FAKE_USER);
-      }
-      setLoading(false);
-    }, 0);
-    return () => window.clearTimeout(timer);
+    const session = getSession();
+    if (session) {
+      setUser(session.user);
+    }
+    setLoading(false);
   }, []);
 
   const signUp = useCallback(async (input: SignUpInput) => {
@@ -57,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logOut = useCallback(() => {
     clearSession();
-    setUser(FAKE_USER);
+    setUser(null);
   }, []);
 
   const value = useMemo(

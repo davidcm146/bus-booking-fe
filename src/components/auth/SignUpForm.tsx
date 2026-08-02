@@ -17,8 +17,7 @@ interface SignUpFormProps {
 export function SignUpForm({ redirectUrl }: SignUpFormProps) {
   const router = useRouter();
   const { signUp } = useAuth();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,13 +25,13 @@ export function SignUpForm({ redirectUrl }: SignUpFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters with uppercase, lowercase, and a digit");
       return;
     }
     setLoading(true);
     try {
-      await signUp({ name, email, password });
+      await signUp({ phone, password });
       router.push(redirectUrl || "/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign up failed");
@@ -53,24 +52,13 @@ export function SignUpForm({ redirectUrl }: SignUpFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Full name</Label>
+            <Label htmlFor="phone">Phone number</Label>
             <Input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Nguyen Minh Anh"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+84 90 123 4567"
               required
             />
           </div>
@@ -81,9 +69,9 @@ export function SignUpForm({ redirectUrl }: SignUpFormProps) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
+              placeholder="At least 8 characters with uppercase, lowercase, and a digit"
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
           {error && <p className="rounded-xl bg-destructive/10 p-3 text-sm font-medium text-destructive" role="alert">{error}</p>}
