@@ -1,14 +1,16 @@
 "use client";
 
-import { createContext, useState, useEffect, useCallback, useMemo } from "react";
-import type { User, AuthSession, SignUpInput, LogInInput } from "@/types/auth";
-import { signUp as signUpService, logIn as logInService, getSession, clearSession } from "@/lib/auth/authService";
+import { createContext, useState, useEffect, useCallback } from "react";
+import type { User, SignUpInput, LogInInput } from "@/types/auth";
+import { signUp as signUpService, logIn as logInService, loginWithGoogle, handleGoogleCallback, getSession, clearSession } from "@/lib/auth/authService";
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   signUp: (input: SignUpInput) => Promise<void>;
   logIn: (input: LogInInput) => Promise<void>;
+  loginWithGoogle: () => void;
+  completeGoogleLogin: (code: string) => Promise<void>;
   logOut: () => void;
 }
 
@@ -21,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const session = getSession();
     if (session) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUser(session.user);
     }
     setLoading(false);
@@ -36,15 +39,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(session.user);
   }, []);
 
+  const completeGoogleLogin = useCallback(async (code: string) => {
+    const session = await handleGoogleCallback(code);
+    setUser(session.user);
+  }, []);
+
   const logOut = useCallback(() => {
     clearSession();
     setUser(null);
   }, []);
 
-  const value = useMemo(
-    () => ({ user, loading, signUp, logIn, logOut }),
-    [loading, logIn, logOut, signUp, user]
-  );
+  const value = { user, loading, signUp, logIn, loginWithGoogle, completeGoogleLogin, logOut };
 
   return (
     <AuthContext.Provider value={value}>

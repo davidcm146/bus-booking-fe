@@ -5,13 +5,11 @@ import type { ReactNode } from "react";
 import {
   BellRing,
   CalendarDays,
-  Database,
   RefreshCcw,
 } from "lucide-react";
 import { cn } from "cnfast";
 import { Button } from "@/components/ui/button";
 import { BookingDesk } from "@/components/operator/BookingDesk";
-import { DataRegistry } from "@/components/operator/DataRegistry";
 import { FinanceManager } from "@/components/operator/FinanceManager";
 import { FleetManager } from "@/components/operator/FleetManager";
 import { NetworkManager } from "@/components/operator/NetworkManager";

@@ -68,6 +68,24 @@ export async function logIn(input: LogInInput): Promise<AuthSession> {
   return postAuth("/login", { phone: input.phone, password: input.password });
 }
 
+export function loginWithGoogle() {
+  window.location.href = `${API_BASE}/api/v1/auth/google`;
+}
+
+export async function handleGoogleCallback(code: string): Promise<AuthSession> {
+  const res = await fetch(`${API_BASE}/api/v1/auth/google/callback?code=${encodeURIComponent(code)}`);
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    const msg = json.error?.message ?? "Google login failed";
+    throw new Error(msg);
+  }
+  const data = json.data;
+  const user = mapUser(data);
+  const session: AuthSession = { user, token: data.token };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  return session;
+}
+
 export function getSession(): AuthSession | null {
   if (typeof window === "undefined") return null;
   try {

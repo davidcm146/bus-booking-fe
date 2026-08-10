@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, UserRoundPlus, ShieldCheck } from "lucide-react";
+import { Loader2, UserRoundPlus, ShieldCheck, Globe } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 interface SignUpFormProps {
@@ -16,7 +16,7 @@ interface SignUpFormProps {
 
 export function SignUpForm({ redirectUrl }: SignUpFormProps) {
   const router = useRouter();
-  const { signUp } = useAuth();
+  const { signUp, loginWithGoogle } = useAuth();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +78,14 @@ export function SignUpForm({ redirectUrl }: SignUpFormProps) {
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create account
+          </Button>
+          <div className="relative py-1">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+            <div className="relative flex justify-center text-xs"><span className="bg-surface px-2 text-muted-foreground">or</span></div>
+          </div>
+          <Button type="button" variant="outline" size="lg" className="w-full" onClick={loginWithGoogle}>
+            <Globe className="mr-2 h-5 w-5" />
+            Continue with Google
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
