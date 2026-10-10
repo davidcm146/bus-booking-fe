@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, redirect } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { getBookingById } from "@/lib/services/bookingService";
 
 export default function ConfirmationPage() {
   const params = useParams();
-  const router = useRouter();
   const { user, loading } = useAuth();
   const { clearAll } = useBooking();
   const bookingIdParam = params.bookingId;
@@ -34,10 +33,7 @@ export default function ConfirmationPage() {
     );
   }
 
-  if (!user) {
-    router.replace(`/login?redirect=/confirmation/${bookingId}`);
-    return null;
-  }
+  if (!user) redirect(`/login?redirect=/confirmation/${bookingId}`);
 
   if (!booking) {
     return (

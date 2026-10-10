@@ -105,26 +105,24 @@ export function Header() {
       </DropdownMenuContent>
     </DropdownMenu>
   ) : (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-lg" aria-label="Theme and account" className="text-muted-foreground hover:text-foreground">
-          <Sun className="h-[18px] w-[18px]" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <div className="flex items-center justify-between px-2 py-2">
-          <span className="text-sm font-medium">Theme</span>
-          {themeSwitch}
-        </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/login">
-            <LogOut className="h-4 w-4" />
-            Sign in
-          </Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={isDark ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+        onClick={() => setTheme(isDark ? "light" : "dark")}
+        className="text-muted-foreground hover:text-foreground transition-transform active:scale-[0.96]"
+      >
+        {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </Button>
+      <Button
+        asChild
+        size="sm"
+        className="rounded-full px-4 text-xs font-bold transition-transform duration-150 ease-out active:scale-[0.97]"
+      >
+        <Link href="/login">Đăng nhập</Link>
+      </Button>
+    </div>
   );
 
   return (

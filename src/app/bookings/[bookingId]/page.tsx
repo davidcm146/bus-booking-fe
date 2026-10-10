@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { getBookingById } from "@/lib/services/bookingService";
 
 export default function BookingDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const { user, loading } = useAuth();
   const bookingIdParam = params.bookingId;
   const bookingId = Array.isArray(bookingIdParam) ? bookingIdParam[0] : bookingIdParam;
@@ -23,20 +22,9 @@ export default function BookingDetailPage() {
     );
   }
 
-  if (!user) {
-    router.replace(`/login?redirect=/bookings/${bookingId}`);
-    return null;
-  }
+  if (!user) redirect(`/login?redirect=/bookings/${bookingId}`);
 
   const booking = getBookingById(bookingId) ?? null;
-
-  if (!booking) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
 
   if (!booking) {
     return (

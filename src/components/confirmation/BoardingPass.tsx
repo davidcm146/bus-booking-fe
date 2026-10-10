@@ -6,7 +6,6 @@ import { Download, Plus, Share2, RotateCw, ArrowLeft, Star } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { cn } from "cnfast";
 import type { Booking } from "@/types/booking";
-import type { Amenity } from "@/types";
 import { getOperator } from "@/lib/services/searchService";
 import { getCityName, formatVND, formatDuration } from "@/lib/format";
 import { AMENITY_CONFIG } from "@/lib/constants";

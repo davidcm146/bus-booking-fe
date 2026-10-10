@@ -6,7 +6,8 @@ import { ArrowLeft, BusFront, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SeatCabin } from "./SeatCabin";
 import { SeatLegend } from "./SeatLegend";
-import { OperatorCard, RouteCard, AmenitiesCard, SelectionSummary } from "./SeatSidebar";
+import { VehicleTypePill } from "@/components/common/VehicleTypePill";
+import { UnifiedTripSidebarCard, SelectionSummary } from "./SeatSidebar";
 import { getSeatAvailability } from "@/lib/services/seatService";
 import { getOperator } from "@/lib/services/searchService";
 import { useBooking } from "@/hooks/useBooking";
@@ -74,6 +75,10 @@ export function SeatMap({ trip }: SeatMapProps) {
     );
   }
 
+  const resolvedVehicleType =
+    trip.vehicleType ??
+    (trip.busType === "double-decker" ? "sleeper" : trip.busType === "premium" ? "limousine" : "seat");
+
   if (!layout) return null;
 
   return (
@@ -90,27 +95,30 @@ export function SeatMap({ trip }: SeatMapProps) {
             variant="outline"
             size="icon"
             aria-label="Back to results"
-            className="text-muted-foreground hover:border-primary hover:text-primary"
+            className="text-muted-foreground hover:border-primary hover:text-primary transition-transform active:scale-[0.97]"
           >
             <ArrowLeft />
           </Button>
           <div>
             <p className="flex items-center gap-2 text-sm font-bold text-primary">
               <BusFront className="h-4 w-4" />
-              Seat selection
+              Chọn chỗ ngồi · Seat selection
             </p>
-            <h1 className="mt-1 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">Choose where you sit</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Available seats update as you select them.</p>
+            <h1 className="mt-1 text-3xl font-extrabold tracking-[-0.04em] sm:text-4xl">Chọn vị trí ngồi của bạn</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Sơ đồ ghế tự động cập nhật theo thời gian thực.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_380px] lg:gap-8">
           {/* Seat map */}
           <div className="space-y-4">
-            <div className="rounded-3xl border border-border bg-surface p-4 shadow-card sm:p-8">
-              <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
-                <h3 className="text-base font-bold sm:text-lg">Select your seats</h3>
-                <SeatLegend />
+            <div className="rounded-3xl border border-border bg-surface p-4 shadow-card sm:p-7">
+              <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+                <h3 className="flex items-center gap-2 text-base font-bold sm:text-lg">
+                  Sơ đồ xe
+                  <VehicleTypePill type={resolvedVehicleType} />
+                </h3>
+                <SeatLegend vehicleType={resolvedVehicleType} />
               </div>
               <SeatCabin
                 trip={trip}
@@ -125,18 +133,17 @@ export function SeatMap({ trip }: SeatMapProps) {
           </div>
 
           {/* Sidebar */}
-          <div className="flex flex-col gap-4 self-start lg:sticky lg:top-20 lg:gap-5">
-            <OperatorCard operator={operator} trip={trip} />
-            <RouteCard trip={trip} />
-            <AmenitiesCard trip={trip} />
+          <aside className="flex flex-col gap-4 self-start lg:sticky lg:top-20 lg:gap-4">
+            <UnifiedTripSidebarCard operator={operator} trip={trip} />
             <SelectionSummary
               selectedSeats={selectedSeats}
               seats={seats}
               total={getTotal()}
               onRemove={removeSeat}
               onContinue={() => router.push("/checkout")}
+              vehicleType={resolvedVehicleType}
             />
-          </div>
+          </aside>
         </div>
       </div>
     </div>

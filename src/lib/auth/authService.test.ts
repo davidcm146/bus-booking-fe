@@ -56,6 +56,52 @@ describe("signUp", () => {
     expect(stored.token).toBe("jwt-abc");
   });
 
+  it("maps the real backend shape (fullName, empty-string email/phone)", async () => {
+    mockFetchResponse({
+      success: true,
+      data: {
+        id: 7,
+        fullName: "",
+        email: "",
+        phone: "+84901234567",
+        role: "passenger",
+        token: "jwt-be",
+      },
+    });
+
+    const session = await signUp({ phone: "+84901234567", password: TEST_PASSWORD });
+
+    expect(session.user.id).toBe("7");
+    expect(session.user.role).toBe("customer");
+    if (session.user.role === "customer") {
+      expect(session.user.name).toBe("+84901234567");
+    }
+    expect(session.token).toBe("jwt-be");
+  });
+
+  it("maps Google users (fullName set, phone empty)", async () => {
+    mockFetchResponse({
+      success: true,
+      data: {
+        id: 9,
+        fullName: "Alice Nguyen",
+        email: "alice@gmail.com",
+        phone: "",
+        role: "passenger",
+        token: "jwt-google",
+      },
+    });
+
+    const session = await signUp({ phone: "+84901234567", password: TEST_PASSWORD });
+
+    expect(session.user.role).toBe("customer");
+    if (session.user.role === "customer") {
+      expect(session.user.name).toBe("Alice Nguyen");
+      expect(session.user.email).toBe("alice@gmail.com");
+    }
+    expect(session.token).toBe("jwt-google");
+  });
+
   it("maps operator role correctly", async () => {
     mockFetchResponse({
       success: true,

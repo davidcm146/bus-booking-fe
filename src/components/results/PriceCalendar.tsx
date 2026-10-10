@@ -18,8 +18,12 @@ export function PriceCalendar({
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const iso = `${y}-${m}-${day}`;
     return {
-      iso: d.toISOString().split("T")[0],
+      iso,
       dayName: d.toLocaleDateString("en-GB", { weekday: "short" }),
       dayNum: d.getDate(),
       monthName: d.toLocaleDateString("en-GB", { month: "short" }),

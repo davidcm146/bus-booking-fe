@@ -134,16 +134,7 @@ export function EmptyCollection({
 }
 
 export function WorkspaceSkeleton() {
-  return (
-    <div className="space-y-5" aria-label="Loading operator workspace">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[1, 2, 3, 4].map((item) => (
-          <Skeleton key={item} className="h-32" />
-        ))}
-      </div>
-      <Skeleton className="h-80" />
-    </div>
-  );
+  return null;
 }
 
 export function DeleteDialog({

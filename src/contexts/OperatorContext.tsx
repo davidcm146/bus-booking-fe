@@ -85,18 +85,12 @@ export function OperatorProvider({
   readonly children: React.ReactNode;
 }) {
   const [data, setData] = useState<OperatorDashboardData>(() => structuredClone(initialData));
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 320);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   const commit = useCallback<CommitFn>(
     async (key, action, entityType, entityId, update) => {
       setPendingKey(key);
-      await delay(260);
       setData((current) => {
         const updated = update(current);
         return {

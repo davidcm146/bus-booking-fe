@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { SearchParams } from "./search-params";
+import { redirect } from "next/navigation";
+import { ResultsPageShell } from "@/components/results/ResultsPageShell";
+import { getOperators, searchTrips } from "@/lib/services/searchService";
+import type { TripSearchQuery, TripType } from "@/types";
 
 export const metadata: Metadata = {
   title: "Bus search results",
@@ -11,21 +13,38 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ResultsPage() {
+export default async function ResultsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const origin = typeof params.origin === "string" ? params.origin : "";
+  const destination = typeof params.destination === "string" ? params.destination : "";
+  const date = typeof params.date === "string" ? params.date : "";
+
+  if (!origin || !destination || !date) {
+    redirect("/");
+  }
+
+  const query: TripSearchQuery = {
+    originId: origin,
+    destinationId: destination,
+    departureDate: date,
+    tripType: (params.tripType === "round-trip" ? "round-trip" : "one-way") as TripType,
+    returnDate: typeof params.returnDate === "string" ? params.returnDate : undefined,
+  };
+
+  const [initialTrips, initialOperators] = await Promise.all([
+    searchTrips(query),
+    getOperators(),
+  ]);
+
   return (
-    <Suspense
-      fallback={
-        <div className="mx-auto max-w-7xl px-4 py-6">
-          <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-          <div className="mt-6 space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
-            ))}
-          </div>
-        </div>
-      }
-    >
-      <SearchParams />
-    </Suspense>
+    <ResultsPageShell
+      query={query}
+      initialTrips={initialTrips}
+      initialOperators={initialOperators}
+    />
   );
 }

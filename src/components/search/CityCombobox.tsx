@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Check, ChevronsUpDown, Search } from "lucide-react";
-import { cn } from "cnfast";
-import { Button } from "@/components/ui/button";
+import { MapPin, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
@@ -27,7 +26,11 @@ interface CityComboboxProps {
   label: string;
   excludeId?: string;
   compact?: boolean;
+  className?: string;
+  rightElement?: React.ReactNode;
 }
+
+const REGIONS = ["Miền Bắc", "Miền Trung", "Miền Nam"] as const;
 
 export function CityCombobox({
   cities,
@@ -37,6 +40,8 @@ export function CityCombobox({
   label,
   excludeId,
   compact = false,
+  className,
+  rightElement,
 }: CityComboboxProps) {
   const [open, setOpen] = useState(false);
 
@@ -48,57 +53,76 @@ export function CityCombobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
+        <button
           type="button"
           role="combobox"
           aria-expanded={open}
-          variant="ghost"
           className={cn(
-            "group h-14 w-full justify-start gap-3 rounded-xl px-3 text-left shadow-none hover:bg-muted/70 sm:h-16",
-            compact && "h-11 px-2.5 sm:h-11"
+            "group relative flex h-[60px] w-full items-center gap-2 rounded-2xl border border-border/80 bg-background px-2.5 text-left transition-[border-color,background-color,transform] duration-150 ease-out hover:border-primary/50 hover:bg-muted/30 active:scale-[0.98] sm:h-[68px] lg:px-2.5 lg:gap-2 2xl:px-3.5 2xl:gap-3",
+            compact && "h-11 px-2.5 sm:h-11 rounded-xl sm:px-2.5 sm:gap-2",
+            className
           )}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-light text-primary">
-            <MapPin className="h-4 w-4" />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary shadow-2xs sm:h-9 sm:w-9">
+            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-xs font-semibold text-muted-foreground">{label}</span>
-            <span className={cn("mt-0.5 block truncate font-bold text-foreground", compact ? "text-sm" : "text-base")}>
+            <span className="block text-[11px] font-semibold text-muted-foreground sm:text-xs">{label}</span>
+            <span className={cn("mt-0.5 block truncate font-bold text-foreground text-xs sm:text-xs xl:text-[13px] 2xl:text-sm", compact && "text-xs")}>
               {selectedCity ? selectedCity.name : placeholder}
             </span>
           </span>
-          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-opacity group-hover:opacity-100 opacity-50" />
-        </Button>
+          {rightElement}
+        </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search city..." />
-          <CommandList>
-            <CommandEmpty>No city found.</CommandEmpty>
-            <CommandGroup>
-              {filteredCities.map((city) => (
-                <CommandItem
-                  key={city.id}
-                  value={city.name}
-                  onSelect={() => {
-                    onChange(city.id);
-                    setOpen(false);
-                  }}
-                >
-                  <Search className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                  {city.name}
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {city.region}
-                  </span>
-                  <Check
-                    className={cn(
-                      "ml-2 h-4 w-4",
-                      value === city.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
+      <PopoverContent
+        className="w-[min(340px,var(--radix-popover-trigger-width))] rounded-2xl border border-border/80 bg-card p-1 shadow-xl ring-1 ring-black/5 dark:ring-white/10"
+        align="start"
+      >
+        <Command value={selectedCity?.name ?? ""}>
+          <CommandInput placeholder="Tìm tỉnh, thành phố..." />
+          <CommandList className="max-h-72 scroll-py-1">
+            <CommandEmpty className="py-6 text-center text-xs text-muted-foreground">
+              Không tìm thấy tỉnh hoặc thành phố phù hợp.
+            </CommandEmpty>
+            {REGIONS.map((region) => {
+              const regionCities = filteredCities.filter((c) => c.region === region);
+              if (regionCities.length === 0) return null;
+              return (
+                <CommandGroup key={region} heading={region} className="px-1 py-1">
+                  {regionCities.map((city) => {
+                    const isSelected = selectedCity?.id === city.id;
+                    return (
+                      <CommandItem
+                        key={city.id}
+                        value={city.name}
+                        keywords={[city.region]}
+                        onSelect={() => {
+                          onChange(city.id);
+                          setOpen(false);
+                        }}
+                        className={cn(
+                          isSelected && "bg-primary/10 text-primary font-bold data-[selected=true]:bg-primary/20"
+                        )}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <MapPin
+                            className={cn(
+                              "h-3.5 w-3.5 shrink-0",
+                              isSelected ? "text-primary" : "text-muted-foreground/60"
+                            )}
+                          />
+                          <span className="truncate">{city.name}</span>
+                        </div>
+                        {isSelected && (
+                          <Check className="h-3.5 w-3.5 text-primary shrink-0 stroke-[2.5]" />
+                        )}
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              );
+            })}
           </CommandList>
         </Command>
       </PopoverContent>
