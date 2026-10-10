@@ -11,6 +11,11 @@ function GoogleCallbackHandler() {
   const { completeGoogleLogin } = useAuth();
 
   useEffect(() => {
+    const denied = searchParams.get("error");
+    if (denied) {
+      router.replace(`/login?error=${encodeURIComponent("Google sign-in was cancelled")}`);
+      return;
+    }
     const code = searchParams.get("code");
     if (!code) {
       router.replace(`/login?error=${encodeURIComponent("Missing authorization code")}`);

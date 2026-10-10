@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Clock, Ticket, ArrowRight, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,26 +11,11 @@ import { getBookings } from "@/lib/services/bookingService";
 import { formatVND, getCityName } from "@/lib/format";
 
 export default function BookingsPage() {
-  const router = useRouter();
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="h-8 w-40 animate-pulse rounded bg-muted" />
-        <div className="mt-6 space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return null;
 
-  if (!user) {
-    router.replace("/login?redirect=/bookings");
-    return null;
-  }
+  if (!user) redirect("/login?redirect=/bookings");
 
   const bookings = [...getBookings()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 

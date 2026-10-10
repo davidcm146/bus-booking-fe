@@ -1,21 +1,17 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, redirect } from "next/navigation";
 import { ResultsPageShell } from "@/components/results/ResultsPageShell";
 import type { TripSearchQuery, TripType } from "@/types";
 
 export function SearchParams() {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const origin = searchParams.get("origin");
   const destination = searchParams.get("destination");
   const date = searchParams.get("date");
 
-  if (!origin || !destination || !date) {
-    router.replace("/");
-    return null;
-  }
+  if (!origin || !destination || !date) redirect("/");
 
   const query: TripSearchQuery = {
     originId: origin,

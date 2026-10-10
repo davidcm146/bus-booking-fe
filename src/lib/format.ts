@@ -1,4 +1,5 @@
 import { cities } from "@/lib/fixtures/cities";
+import { beCityName } from "@/lib/api/tripApi";
 
 const VND_FORMATTER = new Intl.NumberFormat("vi-VN", {
   style: "currency",
@@ -16,9 +17,10 @@ export function getSeatPrice(basePrice: number, isPremium?: boolean): number {
   return isPremium ? Math.round((basePrice * 1.5) / 1000) * 1000 : basePrice;
 }
 
-/** Look up a city display name from its ID using the cities fixture */
+/** Look up a city display name from its ID using the cities fixture.
+ *  Backend-sourced ids (be-area-*) resolve via names registered at trip mapping time. */
 export function getCityName(cityId: string): string {
-  return cities.find((c) => c.id === cityId)?.name ?? cityId;
+  return beCityName(cityId) ?? cities.find((c) => c.id === cityId)?.name ?? cityId;
 }
 
 /** Format minutes as "Xh Ym" */

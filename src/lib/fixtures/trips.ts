@@ -1,4 +1,4 @@
-import type { Trip, BusType, Amenity, RouteStop } from "@/types";
+import type { Trip, BusType, Amenity, RouteStop, VehicleType } from "@/types";
 import { cities } from "./cities";
 
 // Route pairs with approximate duration in minutes and intermediate stops
@@ -182,7 +182,7 @@ function generateTrips(): Trip[] {
         // VND pricing: base 80,000 + duration-based, rounded to nearest 10,000
         const basePrice = Math.round((80000 + route.duration * 500) * BUS_TYPE_PRICES[bus.busType]);
         const price = Math.round((basePrice + Math.floor(rand() * 50000)) / 10000) * 10000;
-        const totalSeats = bus.busType === "double-decker" ? 64 : bus.busType === "premium" ? 32 : 40;
+        const totalSeats = bus.busType === "double-decker" ? 40 : bus.busType === "premium" ? 33 : 45;
         const availableSeats = Math.floor(rand() * (totalSeats + 1));
         const stops = buildStops(route.origin, route.destination, departureTime, route.duration, route.stops);
 
@@ -194,6 +194,11 @@ function generateTrips(): Trip[] {
           allAmenities.splice(idx, 1);
         }
 
+        const vehicleType: VehicleType =
+          bus.busType === "double-decker" ? "sleeper" :
+          bus.busType === "premium" ? "limousine" :
+          "seat";
+
         trips.push({
           id: `trip-${route.origin}-${route.destination}-${dateStr}-${departureTime.replace(":", "")}`,
           originId: route.origin,
@@ -201,6 +206,7 @@ function generateTrips(): Trip[] {
           operatorId,
           busId: bus.id,
           busType: bus.busType,
+          vehicleType,
           departureTime,
           arrivalTime,
           durationMinutes: route.duration,

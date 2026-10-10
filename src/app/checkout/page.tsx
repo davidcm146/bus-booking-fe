@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, redirect } from "next/navigation";
 import { CheckoutStepper } from "@/components/checkout/CheckoutStepper";
 import { ReviewStep } from "@/components/checkout/ReviewStep";
 import { PassengerStep } from "@/components/checkout/PassengerStep";
@@ -41,15 +41,9 @@ export default function CheckoutPage() {
     );
   }
 
-  if (!user) {
-    router.replace("/login?redirect=/checkout");
-    return null;
-  }
+  if (!user) redirect("/login?redirect=/checkout");
 
-  if (!selectedTrip || selectedSeats.length === 0) {
-    router.replace("/");
-    return null;
-  }
+  if (!selectedTrip || selectedSeats.length === 0) redirect("/");
 
   const operator = getOperator(selectedTrip.operatorId);
 

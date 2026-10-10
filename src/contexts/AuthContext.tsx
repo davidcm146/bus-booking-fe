@@ -2,7 +2,7 @@
 
 import { createContext, useState, useEffect, useCallback } from "react";
 import type { User, SignUpInput, LogInInput } from "@/types/auth";
-import { signUp as signUpService, logIn as logInService, loginWithGoogle, handleGoogleCallback, getSession, clearSession } from "@/lib/auth/authService";
+import { signUp as signUpService, logIn as logInService, loginWithGoogle, handleGoogleCallback, getSession, clearSession, fetchMe, saveSession } from "@/lib/auth/authService";
 
 interface AuthContextValue {
   user: User | null;
@@ -22,11 +22,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const session = getSession();
-    if (session) {
+    if (!session) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUser(session.user);
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+    setUser(session.user);
+    // Revalidate against the backend; drop the session only on 401, keep it offline.
+    let cancelled = false;
+    fetchMe(session.token).then(
+      (fresh) => {
+        if (cancelled) return;
+        setUser(fresh);
+        saveSession({ user: fresh, token: session.token });
+        setLoading(false);
+      },
+      (err) => {
+        if (cancelled) return;
+        if (err instanceof Error && (err as Error & { status?: number }).status === 401) {
+          clearSession();
+          setUser(null);
+        }
+        setLoading(false);
+      },
+    );
+    return () => { cancelled = true; };
   }, []);
 
   const signUp = useCallback(async (input: SignUpInput) => {

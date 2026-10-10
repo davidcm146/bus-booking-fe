@@ -2,32 +2,27 @@
 
 import { useEffect, useState } from "react";
 import type { City } from "@/types";
+import { cities as fixtureCities } from "@/lib/fixtures/cities";
 import { getCities } from "@/lib/services/searchService";
 
 let cachedCities: City[] | null = null;
 
 export function useCities() {
-  const [cities, setCities] = useState<City[]>(cachedCities ?? []);
-  const [loading, setLoading] = useState(!cachedCities);
+  // Fixtures are static: render them on the first paint (no skeleton flash),
+  // then quietly revalidate in case the service ever goes remote.
+  const [cities, setCities] = useState<City[]>(cachedCities ?? fixtureCities);
 
   useEffect(() => {
-    if (cachedCities) {
-      return;
-    }
-
     let mounted = true;
     getCities().then((data) => {
-      if (mounted) {
+      if (mounted && data.length > 0) {
         cachedCities = data;
         setCities(data);
-        setLoading(false);
       }
     });
 
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
-  return { cities, loading };
+  return { cities };
 }

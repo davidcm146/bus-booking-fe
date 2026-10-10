@@ -14,6 +14,9 @@ export interface Operator {
 
 export type BusType = "standard" | "premium" | "double-decker";
 
+// Raw backend vehicle type (only set on backend-sourced trips).
+export type VehicleType = "sleeper" | "limousine" | "seat";
+
 export type Amenity = "wifi" | "power" | "ac" | "toilet" | "usb" | "snack" | "legroom" | "entertainment";
 
 export interface SeatLayout {
@@ -56,6 +59,10 @@ export interface Trip {
   date: string;
   amenities: Amenity[];
   stops: RouteStop[];
+  /** Backend operator display name (for operators outside the fixture list). */
+  operatorName?: string;
+  /** Backend vehicle type (drives seat geometry + color). */
+  vehicleType?: VehicleType;
 }
 
 export interface TripSearchQuery {

@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   WalletCards,
 } from "lucide-react";
-import type { Amenity, BusType } from "@/types";
+import type { Amenity, BusType, VehicleType } from "@/types";
 
 // ─── Navigation ──────────────────────────────────────────────────────────
 
@@ -50,20 +50,23 @@ export const AMENITY_CONFIG: Record<Amenity, { icon: typeof Wifi; short: string;
 
 // ─── Filters ─────────────────────────────────────────────────────────────
 
-export type TimeOfDay = "morning" | "midday" | "afternoon" | "evening";
+export type TimeOfDay = "early-morning" | "morning" | "afternoon" | "evening";
 
 export interface Filters {
   timeOfDay: TimeOfDay[];
   maxPrice: number | null;
   operators: string[];
   busTypes: BusType[];
+  vehicleTypes: VehicleType[];
+  amenities: Amenity[];
+  onlyAvailable: boolean;
 }
 
-export const TIME_SLOTS: { value: TimeOfDay; label: string; from: number; to: number }[] = [
-  { value: "morning", label: "Morning", from: 6, to: 11 },
-  { value: "midday", label: "Midday", from: 11, to: 14 },
-  { value: "afternoon", label: "Afternoon", from: 14, to: 18 },
-  { value: "evening", label: "Evening", from: 18, to: 23 },
+export const TIME_SLOTS: { value: TimeOfDay; label: string; labelVi: string; from: number; to: number }[] = [
+  { value: "early-morning", label: "Early morning", labelVi: "Sáng sớm", from: 0, to: 6 },
+  { value: "morning", label: "Morning", labelVi: "Buổi sáng", from: 6, to: 12 },
+  { value: "afternoon", label: "Afternoon", labelVi: "Buổi chiều", from: 12, to: 18 },
+  { value: "evening", label: "Evening", labelVi: "Buổi tối", from: 18, to: 24 },
 ];
 
 export const TIME_SLOT_HOURS: Record<TimeOfDay, readonly [number, number]> = Object.fromEntries(
@@ -76,25 +79,108 @@ export const BUS_TYPE_OPTIONS: { value: BusType; label: string }[] = [
   { value: "double-decker", label: "Double-decker" },
 ];
 
+// ─── Vehicle types (backend & UI themes) ──────────────────────────────────
+
+export interface VehicleTypeDetails {
+  label: string;
+  labelVi: string;
+  color: string;
+  bgLight: string;
+  borderLight: string;
+  badgeBg: string;
+  badgeBorder: string;
+  badgeText: string;
+  accentGradient: string;
+  glowColor: string;
+  description: string;
+}
+
+export const VEHICLE_TYPE_META: Record<VehicleType, VehicleTypeDetails> = {
+  limousine: {
+    label: "Limousine",
+    labelVi: "Xe Limousine VIP",
+    color: "#d97706",
+    bgLight: "bg-amber-500/10 dark:bg-amber-500/15",
+    borderLight: "border-amber-500/30",
+    badgeBg: "bg-amber-500/10 dark:bg-amber-500/20",
+    badgeBorder: "border-amber-500/30 dark:border-amber-500/40",
+    badgeText: "text-amber-700 dark:text-amber-300",
+    accentGradient: "linear-gradient(135deg, #d97706, #b45309)",
+    glowColor: "rgba(217, 119, 6, 0.25)",
+    description: "Ghế da VIP chỉnh điện, TV giải trí, sạc riêng & không gian đẳng cấp",
+  },
+  sleeper: {
+    label: "Sleeper",
+    labelVi: "Xe Giường nằm",
+    color: "#7c3aed",
+    bgLight: "bg-violet-500/10 dark:bg-violet-500/15",
+    borderLight: "border-violet-500/30",
+    badgeBg: "bg-violet-500/10 dark:bg-violet-500/20",
+    badgeBorder: "border-violet-500/30 dark:border-violet-500/40",
+    badgeText: "text-violet-700 dark:text-violet-300",
+    accentGradient: "linear-gradient(135deg, #7c3aed, #6d28d9)",
+    glowColor: "rgba(124, 58, 237, 0.25)",
+    description: "Khoang giường nằm êm ái, rèm che riêng tư, chăn đắp & cổng sạc",
+  },
+  seat: {
+    label: "Standard seat",
+    labelVi: "Xe Ghế ngồi",
+    color: "#059669",
+    bgLight: "bg-emerald-500/10 dark:bg-emerald-500/15",
+    borderLight: "border-emerald-500/30",
+    badgeBg: "bg-emerald-500/10 dark:bg-emerald-500/20",
+    badgeBorder: "border-emerald-500/30 dark:border-emerald-500/40",
+    badgeText: "text-emerald-700 dark:text-emerald-300",
+    accentGradient: "linear-gradient(135deg, #059669, #047857)",
+    glowColor: "rgba(5, 150, 105, 0.25)",
+    description: "Ghế đệm ngả lưng cao cấp, điều hòa mát mẻ, tiết kiệm chi phí",
+  },
+};
+
+export const VEHICLE_TYPE_OPTIONS: { value: VehicleType; label: string; labelVi: string; color: string }[] = [
+  { value: "limousine", label: "Limousine", labelVi: "Xe Limousine VIP", color: "#d97706" },
+  { value: "sleeper", label: "Sleeper", labelVi: "Xe Giường nằm", color: "#7c3aed" },
+  { value: "seat", label: "Standard seat", labelVi: "Xe Ghế ngồi", color: "#059669" },
+];
+
 export const EMPTY_FILTERS: Filters = {
   timeOfDay: [],
   maxPrice: null,
   operators: [],
   busTypes: [],
+  vehicleTypes: [],
+  amenities: [],
+  onlyAvailable: false,
 };
 
-export const MIN_PRICE = 150_000;
+export const MIN_PRICE = 50_000;
 export const MAX_PRICE = 650_000;
-export const PRICE_STEP = 50_000;
+export const PRICE_STEP = 25_000;
+
+export const PRICE_PRESETS = [
+  { label: "Dưới 200k", max: 200_000 },
+  { label: "200k - 350k", max: 350_000 },
+  { label: "350k - 500k", max: 500_000 },
+  { label: "Tất cả mức giá", max: null },
+] as const;
 
 // ─── Sort ────────────────────────────────────────────────────────────────
 
-export type SortOption = "price-asc" | "departure-asc" | "duration-asc";
+export type SortOption =
+  | "departure-asc"
+  | "departure-desc"
+  | "price-asc"
+  | "price-desc"
+  | "duration-asc"
+  | "rating-desc";
 
 export const SORT_LABELS: Record<SortOption, string> = {
-  "price-asc": "Price (low to high)",
-  "departure-asc": "Departure time (earliest)",
-  "duration-asc": "Duration (shortest)",
+  "departure-asc": "Giờ đi: Sớm nhất",
+  "departure-desc": "Giờ đi: Muộn nhất",
+  "price-asc": "Giá: Thấp đến cao",
+  "price-desc": "Giá: Cao đến thấp",
+  "duration-asc": "Thời gian: Nhanh nhất",
+  "rating-desc": "Đánh giá: Cao nhất",
 };
 
 // ─── Popular routes ──────────────────────────────────────────────────────

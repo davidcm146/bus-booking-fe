@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeftRight, Search, CalendarDays, ArrowRight } from "lucide-react";
 import { format, parseISO, isValid } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CityCombobox } from "./CityCombobox";
@@ -15,7 +14,7 @@ import type { TripType } from "@/types";
 
 export function SearchForm() {
   const router = useRouter();
-  const { cities, loading } = useCities();
+  const { cities } = useCities();
 
   const [tripType, setTripType] = useState<TripType>("one-way");
   const [originId, setOriginId] = useState<string | null>(null);
@@ -49,146 +48,289 @@ export function SearchForm() {
     router.push(`/results?${params.toString()}`);
   }
 
-  if (loading) {
-    return (
-      <div className="rounded-3xl bg-surface p-4 shadow-float">
-        <div className="h-12 animate-pulse rounded-lg bg-muted" />
-        <div className="mt-2 grid h-20 animate-pulse grid-cols-3 gap-2 rounded-lg bg-muted" />
-      </div>
-    );
-  }
+  const swapButton = (
+    <span
+      role="button"
+      tabIndex={0}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleSwap();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.stopPropagation();
+          handleSwap();
+        }
+      }}
+      title="Đổi chiều điểm đi và điểm đến"
+      aria-label="Đổi chiều điểm đi và điểm đến"
+      className="hover-rotate flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/80 bg-muted/60 text-muted-foreground transition-all duration-200 ease-out hover:border-primary/50 hover:bg-primary/10 hover:text-primary active:scale-90 sm:h-7.5 sm:w-7.5 sm:rounded-xl"
+    >
+      <ArrowLeftRight className="h-3.5 w-3.5" />
+    </span>
+  );
 
   return (
-    <div className="animate-slide-up rounded-3xl bg-surface p-3 shadow-float ring-1 ring-border/70 sm:p-4">
-      <div className="flex flex-col gap-3 border-b border-border px-1 pb-3 sm:flex-row sm:items-center sm:justify-between sm:px-2">
+    <div className="animate-slide-up rounded-3xl bg-surface p-4 shadow-float ring-1 ring-border/70 sm:p-5">
+      {/* Header with Title and High-contrast Mode Switcher */}
+      <div className="flex flex-col gap-3.5 border-b border-border/80 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-extrabold tracking-tight">Where are you headed?</p>
-          <p className="text-xs text-muted-foreground">Choose your route and travel date.</p>
+          <h2 className="text-base font-extrabold tracking-tight sm:text-lg">Bạn muốn đi đâu?</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">Chọn điểm đi, điểm đến và thời gian khởi hành phù hợp.</p>
         </div>
-        <Tabs value={tripType} onValueChange={(v) => setTripType(v as TripType)}>
-          <TabsList className="rounded-full">
-            <TabsTrigger value="one-way" className="rounded-full">One-way</TabsTrigger>
-            <TabsTrigger value="round-trip" className="rounded-full">Round-trip</TabsTrigger>
-          </TabsList>
-        </Tabs>
+
+        {/* High-contrast, tactile switcher - full width on mobile, compact on desktop */}
+        <div className="grid w-full grid-cols-2 items-center rounded-xl border border-border/70 bg-muted/90 p-1 shadow-2xs sm:w-fit sm:flex">
+          <button
+            type="button"
+            onClick={() => setTripType("one-way")}
+            className={cn(
+              "flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-all duration-150 ease-out active:scale-[0.97] sm:px-4",
+              tripType === "one-way"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Một chiều
+          </button>
+          <button
+            type="button"
+            onClick={() => setTripType("round-trip")}
+            className={cn(
+              "flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-all duration-150 ease-out active:scale-[0.97] sm:px-4",
+              tripType === "round-trip"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Khứ hồi
+          </button>
+        </div>
       </div>
 
-      <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)_auto] lg:items-center">
-        <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-          <div className="flex-1">
+      {/* Search Grid */}
+      {tripType === "one-way" ? (
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-center">
+          {/* Origin */}
+          <div>
             <CityCombobox
               cities={cities}
               value={originId}
               onChange={setOriginId}
-              placeholder="From"
-              label="From"
+              placeholder="Chọn điểm đi"
+              label="Điểm xuất phát"
               excludeId={destinationId ?? undefined}
+              rightElement={swapButton}
             />
           </div>
 
-          <div className="flex items-center justify-center sm:block">
-            <Button
-              type="button"
-              onClick={handleSwap}
-              variant="outline"
-              size="icon"
-              aria-label="Swap origin and destination"
-              className="hover-rotate -my-2 border-border bg-card text-muted-foreground shadow-card hover:border-primary hover:text-primary sm:my-0"
-            >
-              <ArrowLeftRight />
-            </Button>
-          </div>
-
-          <div className="flex-1">
+          {/* Destination */}
+          <div>
             <CityCombobox
               cities={cities}
               value={destinationId}
               onChange={setDestinationId}
-              placeholder="To"
-              label="To"
+              placeholder="Chọn điểm đến"
+              label="Điểm đến"
               excludeId={originId ?? undefined}
             />
           </div>
-        </div>
 
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-          <div className="flex h-14 flex-1 items-center gap-3 rounded-xl px-3 transition-colors hover:bg-muted/70 sm:h-16 relative">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-light text-primary">
-              <CalendarDays className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-xs font-semibold text-muted-foreground">Depart</span>
-              <Popover open={departOpen} onOpenChange={setDepartOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="mt-0.5 h-auto w-full min-w-0 justify-start p-0 text-left text-sm font-bold text-foreground shadow-none hover:bg-transparent"
-                  >
-                    {(() => { const d = parseISO(departureDate); return isValid(d) ? format(d, "dd MMM yyyy") : "Pick a date"; })()}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={(() => { const d = parseISO(departureDate); return isValid(d) ? d : undefined; })()}
-                    onSelect={(date) => { if (date) { setDepartureDate(format(date, "yyyy-MM-dd")); setDepartOpen(false); } }}
-                    disabled={{ before: new Date() }}
-                  />
-                </PopoverContent>
-              </Popover>
-            </span>
+          {/* Departure Date */}
+          <div>
+            <Popover open={departOpen} onOpenChange={setDepartOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="group relative flex h-[60px] w-full items-center gap-2 rounded-2xl border border-border/80 bg-background px-2.5 text-left transition-[border-color,background-color,transform] duration-150 ease-out hover:border-primary/50 hover:bg-muted/30 active:scale-[0.98] sm:h-[68px] lg:px-2.5 lg:gap-2 2xl:px-3.5 2xl:gap-3"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary shadow-2xs sm:h-9 sm:w-9">
+                    <CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[11px] font-semibold text-muted-foreground sm:text-xs">Ngày đi</span>
+                    <span className="mt-0.5 block truncate text-xs font-bold text-foreground tabular-nums sm:text-xs xl:text-[13px] 2xl:text-sm">
+                      {(() => {
+                        const d = parseISO(departureDate);
+                        return isValid(d) ? format(d, "dd/MM/yyyy") : "Chọn ngày";
+                      })()}
+                    </span>
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 rounded-2xl border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10" align="start">
+                <Calendar
+                  mode="single"
+                  selected={(() => {
+                    const d = parseISO(departureDate);
+                    return isValid(d) ? d : undefined;
+                  })()}
+                  onSelect={(date) => {
+                    if (date) {
+                      setDepartureDate(format(date, "yyyy-MM-dd"));
+                      setDepartOpen(false);
+                    }
+                  }}
+                  disabled={{ before: new Date() }}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
-          {tripType === "round-trip" ? (
-            <div className="flex h-14 flex-1 items-center gap-3 rounded-xl px-3 transition-colors hover:bg-muted/70 sm:h-16 relative">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-light text-primary">
-                <CalendarDays className="h-4 w-4" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-xs font-semibold text-muted-foreground">Return</span>
-                <Popover open={returnOpen} onOpenChange={setReturnOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="mt-0.5 h-auto w-full min-w-0 justify-start p-0 text-left text-sm font-bold text-foreground shadow-none hover:bg-transparent"
-                    >
-                      {(() => { const d = parseISO(returnDate); return isValid(d) ? format(d, "dd MMM yyyy") : "Pick a date"; })()}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={(() => { const d = parseISO(returnDate); return isValid(d) ? d : undefined; })()}
-                      onSelect={(date) => { if (date) { setReturnDate(format(date, "yyyy-MM-dd")); setReturnOpen(false); } }}
-                      disabled={{ before: parseISO(departureDate) }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </span>
-            </div>
-          ) : (
-            <div className="hidden xl:block" aria-hidden="true" />
-          )}
+          {/* Search Button */}
+          <div>
+            <button
+              type="button"
+              onClick={handleSearch}
+              disabled={!canSearch}
+              aria-label="Tìm chuyến xe"
+              className={cn(
+                "flex h-[60px] w-full items-center justify-center gap-2 rounded-2xl border border-transparent px-4 text-sm font-bold transition-[transform,background-color,box-shadow,opacity] duration-150 ease-out active:scale-[0.98] sm:h-[68px] sm:text-base",
+                canSearch
+                  ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 cursor-pointer"
+                  : "border-border/60 bg-muted/70 text-muted-foreground shadow-none opacity-80 cursor-not-allowed"
+              )}
+            >
+              <Search className="h-4 w-4" />
+              <span>Tìm chuyến xe</span>
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
+      ) : (
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-center">
+          {/* Origin */}
+          <div className="sm:col-span-1 lg:col-span-1">
+            <CityCombobox
+              cities={cities}
+              value={originId}
+              onChange={setOriginId}
+              placeholder="Chọn điểm đi"
+              label="Điểm xuất phát"
+              excludeId={destinationId ?? undefined}
+              rightElement={swapButton}
+            />
+          </div>
 
-        <Button
-          onClick={handleSearch}
-          disabled={!canSearch}
-          aria-label="Search buses"
-          size="lg"
-          className="h-14 w-full rounded-2xl px-5 sm:h-16 lg:w-auto"
-        >
-          <Search className="h-4 w-4" />
-          <span>Search buses</span>
-          <ArrowRight className="h-4 w-4" />
-        </Button>
-      </div>
+          {/* Destination */}
+          <div className="sm:col-span-1 lg:col-span-1">
+            <CityCombobox
+              cities={cities}
+              value={destinationId}
+              onChange={setDestinationId}
+              placeholder="Chọn điểm đến"
+              label="Điểm đến"
+              excludeId={originId ?? undefined}
+            />
+          </div>
+
+          {/* Departure Date */}
+          <div className="sm:col-span-1 lg:col-span-1">
+            <Popover open={departOpen} onOpenChange={setDepartOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="group relative flex h-[60px] w-full items-center gap-2 rounded-2xl border border-border/80 bg-background px-2.5 text-left transition-[border-color,background-color,transform] duration-150 ease-out hover:border-primary/50 hover:bg-muted/30 active:scale-[0.98] sm:h-[68px] lg:px-2.5 lg:gap-2 2xl:px-3.5 2xl:gap-3"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary shadow-2xs sm:h-9 sm:w-9">
+                    <CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[11px] font-semibold text-muted-foreground sm:text-xs">Ngày đi</span>
+                    <span className="mt-0.5 block truncate text-xs font-bold text-foreground tabular-nums sm:text-xs xl:text-[13px] 2xl:text-sm">
+                      {(() => {
+                        const d = parseISO(departureDate);
+                        return isValid(d) ? format(d, "dd/MM/yyyy") : "Chọn ngày";
+                      })()}
+                    </span>
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 rounded-2xl border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10" align="start">
+                <Calendar
+                  mode="single"
+                  selected={(() => {
+                    const d = parseISO(departureDate);
+                    return isValid(d) ? d : undefined;
+                  })()}
+                  onSelect={(date) => {
+                    if (date) {
+                      setDepartureDate(format(date, "yyyy-MM-dd"));
+                      setDepartOpen(false);
+                    }
+                  }}
+                  disabled={{ before: new Date() }}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Return Date */}
+          <div className="sm:col-span-1 lg:col-span-1">
+            <Popover open={returnOpen} onOpenChange={setReturnOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="group relative flex h-[60px] w-full items-center gap-2 rounded-2xl border border-border/80 bg-background px-2.5 text-left transition-[border-color,background-color,transform] duration-150 ease-out hover:border-primary/50 hover:bg-muted/30 active:scale-[0.98] sm:h-[68px] lg:px-2.5 lg:gap-2 2xl:px-3.5 2xl:gap-3"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary shadow-2xs sm:h-9 sm:w-9">
+                    <CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[11px] font-semibold text-muted-foreground sm:text-xs">Ngày về</span>
+                    <span className="mt-0.5 block truncate text-xs font-bold text-foreground tabular-nums sm:text-xs xl:text-[13px] 2xl:text-sm">
+                      {(() => {
+                        const d = parseISO(returnDate);
+                        return isValid(d) ? format(d, "dd/MM/yyyy") : "Chọn ngày";
+                      })()}
+                    </span>
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 rounded-2xl border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10" align="start">
+                <Calendar
+                  mode="single"
+                  selected={(() => {
+                    const d = parseISO(returnDate);
+                    return isValid(d) ? d : undefined;
+                  })()}
+                  onSelect={(date) => {
+                    if (date) {
+                      setReturnDate(format(date, "yyyy-MM-dd"));
+                      setReturnOpen(false);
+                    }
+                  }}
+                  disabled={{ before: parseISO(departureDate) }}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Search Button */}
+          <div className="col-span-1 sm:col-span-1 lg:col-span-1">
+            <button
+              type="button"
+              onClick={handleSearch}
+              disabled={!canSearch}
+              aria-label="Tìm chuyến xe"
+              className={cn(
+                "flex h-[60px] w-full items-center justify-center gap-2 rounded-2xl border border-transparent px-4 text-sm font-bold transition-[transform,background-color,box-shadow,opacity] duration-150 ease-out active:scale-[0.98] sm:h-[68px] sm:text-base",
+                canSearch
+                  ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 cursor-pointer"
+                  : "border-border/60 bg-muted/70 text-muted-foreground shadow-none opacity-80 cursor-not-allowed"
+              )}
+            >
+              <Search className="h-4 w-4" />
+              <span>Tìm chuyến xe</span>
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {sameCity && (
         <p className="px-3 pb-1 pt-3 text-sm font-medium text-destructive" role="alert">
-          Choose two different cities to search this route.
+          Vui lòng chọn 2 điểm đi và điểm đến khác nhau.
         </p>
       )}
     </div>

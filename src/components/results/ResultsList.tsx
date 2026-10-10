@@ -13,24 +13,7 @@ interface ResultsListProps {
 }
 
 function TripSkeleton() {
-  return (
-    <Card className="flex animate-pulse flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex items-center gap-5">
-        <div className="h-12 w-12 rounded-xl bg-muted" />
-        <div className="space-y-2">
-          <div className="h-6 w-16 rounded bg-muted" />
-          <div className="h-3 w-12 rounded bg-muted" />
-        </div>
-        <div className="h-6 w-16 rounded bg-muted" />
-        <div className="h-1 w-20 rounded bg-muted" />
-        <div className="h-6 w-16 rounded bg-muted" />
-      </div>
-      <div className="flex items-center justify-between gap-4 lg:flex-col lg:items-end">
-        <div className="h-8 w-16 rounded bg-muted" />
-        <div className="h-8 w-20 rounded bg-muted" />
-      </div>
-    </Card>
-  );
+  return null;
 }
 
 export function ResultsList({ trips, operators }: ResultsListProps) {
@@ -54,17 +37,12 @@ export function ResultsList({ trips, operators }: ResultsListProps) {
 
   return (
     <div className="space-y-3">
-      {trips.map((trip, index) => (
-        <div
+      {trips.map((trip) => (
+        <TripCard
           key={trip.id}
-          className="stagger-item"
-          style={{ "--stagger-index": Math.min(index, 5) } as React.CSSProperties}
-        >
-          <TripCard
-            trip={trip}
-            operator={operators.find((op) => op.id === trip.operatorId)}
-          />
-        </div>
+          trip={trip}
+          operator={operators.find((op) => op.id === trip.operatorId)}
+        />
       ))}
     </div>
   );
