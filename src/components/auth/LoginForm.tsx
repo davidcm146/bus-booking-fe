@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, LogIn, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { DEMO_OPERATOR_EMAIL, DEMO_OPERATOR_PASSWORD } from "@/lib/auth/authService";
+import { DEMO_OPERATOR_PHONE, DEMO_OPERATOR_PASSWORD } from "@/lib/auth/authService";
 
 interface LoginFormProps {
   readonly redirectUrl?: string;
@@ -18,7 +18,7 @@ interface LoginFormProps {
 export function LoginForm({ redirectUrl }: LoginFormProps) {
   const router = useRouter();
   const { logIn } = useAuth();
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ export function LoginForm({ redirectUrl }: LoginFormProps) {
     setError(null);
     setLoading(true);
     try {
-      await logIn({ email, password });
+      await logIn({ phone, password });
       router.push(redirectUrl || "/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -49,13 +49,13 @@ export function LoginForm({ redirectUrl }: LoginFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="phone">Phone number</Label>
             <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+84 90 123 4567"
               required
             />
           </div>
@@ -63,9 +63,9 @@ export function LoginForm({ redirectUrl }: LoginFormProps) {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-bold">Operator demo</p>
-                <p className="mt-1 text-xs text-muted-foreground">{DEMO_OPERATOR_EMAIL} · {DEMO_OPERATOR_PASSWORD}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{DEMO_OPERATOR_PHONE} · {DEMO_OPERATOR_PASSWORD}</p>
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={() => { setEmail(DEMO_OPERATOR_EMAIL); setPassword(DEMO_OPERATOR_PASSWORD); }}>
+              <Button type="button" variant="outline" size="sm" onClick={() => { setPhone(DEMO_OPERATOR_PHONE); setPassword(DEMO_OPERATOR_PASSWORD); }}>
                 Use demo
               </Button>
             </div>
